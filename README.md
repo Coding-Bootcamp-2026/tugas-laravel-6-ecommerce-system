@@ -36,76 +36,81 @@ Aplikasi ini memiliki skema yang kompleks dengan **9 tabel** yang saling berelas
 
 ---
 
-## Tahapan Pengerjaan Tugas
+## Tahapan Pengerjaan Tugas Bagian 1: Instalasi & Database
 
 ### 1. Install Laravel Project
-- Buka terminal/command prompt.
-- Buat project Laravel baru menggunakan Composer dengan nama `ecommerce-app`:
-  ```bash
-  composer create-project laravel/laravel ecommerce-app
-  ```
+- Buat project Laravel baru menggunakan Composer dengan nama `ecommerce-app`.
 
 ### 2. Buat Database dan Konfigurasi Koneksi
-- Buat database baru di MySQL (misal menggunakan phpMyAdmin atau DataGrip) dengan nama `db_ecommerce`.
-- Buka file `.env` di project Laravel Anda, ubah konfigurasi agar terhubung dengan database:
-  ```env
-  DB_CONNECTION=mysql
-  DB_HOST=127.0.0.1
-  DB_PORT=3306
-  DB_DATABASE=db_ecommerce
-  DB_USERNAME=root
-  DB_PASSWORD=
-  ```
+- Buat database `db_ecommerce` di MySQL/MariaDB.
+- Sesuaikan konfigurasi koneksi pada file `.env`.
 
 ### 3. Buat Migration
-- Buat file migration untuk kesembilan tabel di atas (`php artisan make:migration ...`).
-- **Penting:** Perhatikan urutan pembuatan migration. Tabel *master* (seperti `users` dan `categories`) harus dibuat lebih dahulu. Setelah itu baru buat tabel yang membutuhkan *Foreign Key* (seperti `products` dan `orders`).
-- Definisikan constraint Foreign Key dengan tipe *Cascade* pada kolom yang berelasi, lalu jalankan `php artisan migrate`.
+- Buat file migration untuk kesembilan tabel di atas secara berurutan. Tabel master (tanpa foreign key) harus dibuat lebih dahulu.
+- Definisikan constraint *Foreign Key* dengan tipe `Cascade On Delete`.
+- Jalankan perintah `php artisan migrate`.
 
 ### 4. Buat Model dengan Eloquent ORM
-- Buat class Model untuk setiap tabel.
-- Tentukan array `$fillable` (untuk keamanan *Mass Assignment*) di semua Model.
-- Definisikan metode **Relasi Eloquent** (seperti `hasOne`, `hasMany`, `belongsTo`) di setiap file Model sesuai dengan struktur ERD di atas.
+- Buat class Model untuk setiap tabel dan tentukan properti `$fillable`.
+- Definisikan metode **Relasi Eloquent** (seperti `hasOne`, `hasMany`, `belongsTo`) di dalam class Model sesuai ERD.
 
 ### 5. Isi Data Dummy (Seeder)
-- Buat *Seeder* atau *Factory* minimal untuk tabel `categories` dan `products` agar Anda memiliki data untuk diuji coba di halaman View.
-- Masukkan minimal 5 kategori dan 15 produk dummy ke dalam database.
-- Jalankan perintah `php artisan db:seed`.
+- Buat *Database Seeder* untuk mengotomatiskan pengisian data awal.
+- Pastikan ke-9 tabel terisi secara fungsional. Jalankan `php artisan db:seed`.
 
-> **Fokus Utama CRUD:**
-> *Untuk tahapan 6 hingga 12, Anda diminta untuk berfokus membangun antarmuka web dan operasi CRUD khusus untuk entitas/tabel **Data Produk (`products`)**.*
+---
 
-### 6. Buat Route
-- Buka file `routes/web.php`.
-- Definisikan rute untuk mengelola Data Produk. Sangat disarankan memanfaatkan fitur *Route Resource*:
-  ```php
-  Route::resource('products', ProductController::class);
-  ```
+## Tahapan Pengerjaan Tugas Bagian 2: Implementasi Dashboard CRUD
+Pada bagian ini, Anda wajib mendemonstrasikan implementasi CRUD (Create, Read, Update, Delete) yang dijabarkan per fitur. Gunakan *Route Resource* untuk mempermudah pengerjaan.
 
-### 7. Buat Controller
-- Generate controller dengan perintah: `php artisan make:controller ProductController --resource`.
-- Pastikan seluruh proses pengambilan dan manipulasi data di dalam Controller **wajib menggunakan metode Eloquent ORM** (seperti `Product::create()`, `Product::findOrFail()`, dll), bukan DB Query Builder konvensional.
+### 6. Desain Layout Master (Navbar)
+- **Layout:** Buat file *master template* (contoh: `resources/views/layouts/app.blade.php`).
+- **Styling:** Sisipkan library Bootstrap/Tailwind CSS. 
+- **Navigasi:** Buat barisan **Navbar** di atas layar yang berisikan tautan navigasi untuk berpindah antar 4 menu utama: Kategori, Produk, Pelanggan, dan Pesanan.
+- Sediakan blok `@yield('content')` untuk membungkus konten dinamis antar halaman.
 
-### 8. Buat View Read (Tampilkan Semua Data)
-- Pada method `index` di Controller, ambil seluruh data produk dari database. Gunakan teknik **Eager Loading** Eloquent (contoh: `Product::with('category')->get()`) untuk mencegah masalah performa *N+1 Query Problem*.
-- Buat file `resources/views/products/index.blade.php`.
-- Tampilkan data di HTML dengan rapi (misal menggunakan tabel yang memuat Nama Produk, Kategori, Harga, dan Stok). Sediakan tombol opsi: "Tambah Produk", "Detail", "Edit", dan "Hapus".
+### 7. Fitur 1: Manajemen Kategori (Tabel `categories`)
+- **Route:** Definisikan route resource `categories`.
+- **Controller:** Generate `CategoryController` menggunakan Artisan.
+- **View Read (Index):** Tampilkan daftar Kategori dalam format tabel HTML (ID, Nama, Deskripsi).
+- **View Create & Store:** Buat form untuk field Nama dan Deskripsi. Gunakan `Category::create()` pada Controller untuk menyimpan data baru ke tabel.
+- **View Edit & Update:** Buat form serupa dengan mode *pre-filled* (terisi nilai lama). Gunakan metode `$category->update()` untuk menyimpan perubahan.
+- **Delete:** Hapus kategori menggunakan relasi model `delete()`.
 
-### 9. Buat View Create (Tambah Data Baru)
-- Pada method `create`, ambil seluruh data dari tabel `categories` menggunakan Eloquent (`Category::all()`) dan lewatkan (passing) ke form View.
-- Di View `resources/views/products/create.blade.php`, buat form HTML. Gunakan *tag select/dropdown* untuk memilih Kategori.
-- Pada method `store`, validasi request yang masuk, lalu simpan baris data produk baru ke tabel menggunakan metode mass-assignment Eloquent. *Redirect* kembali ke halaman *index* dengan *flash message*.
+### 8. Fitur 2: Manajemen Produk (Tabel `products` dan `product_images`)
+- **Route & Controller:** Definisikan rute dan buat `ProductController`.
+- **View Read (Index):** Tampilkan daftar Produk. Pastikan Anda menerapkan teknik **Eager Loading** (`Product::with('category')`) di controller agar *loading* data kategori tidak terkena masalah N+1 Query.
+- **View Create & Store (Multi-Tabel Insert):**
+  - Di method `create`, kirim data `Category::all()` untuk membuat Dropdown (Select) pilihan Kategori di halaman view HTML.
+  - Pada View Form Tambah, tambahkan 1 input kolom teks opsional untuk **URL Gambar**.
+  - Saat `store`, insert data utama ke tabel `products` lebih dulu. Setelah itu, jika input URL Gambar tidak kosong, catat ke tabel `product_images` dengan merujuk ke `$product->id` yang baru saja terbuat.
+- **View Edit, Update, & Show:** Buat rincian selengkapnya untuk memodifikasi produk. Halaman Show harus menampilkan detail kategori beserta *link* gambar jika ada.
+- **Delete:** Menghapus data produk. Record gambar di `product_images` harusnya otomatis musnah terhapus berkat fitur *Cascade On Delete*.
 
-### 10. Buat View Detail Data (Show)
-- Pada method `show($id)`, ambil data produk spesifik menggunakan method `Product::findOrFail($id)`.
-- Passing data produk tersebut ke `resources/views/products/show.blade.php`.
-- Tampilkan seluruh kolom/informasi dari produk, termasuk nama kategori dari produk tersebut (memanfaatkan relasi Eloquent).
+### 9. Fitur 3: Manajemen Pelanggan (Tabel `users` dan `customers`)
+- **Route & Controller:** Buat `CustomerController` dan definisikan rute resource.
+- **View Read (Index):** Tampilkan tabel daftar Pelanggan dengan mengkombinasikan data dari relasi `user` (Nama, Email) dan data `customer` sendiri (Telepon, Alamat).
+- **View Create & Store (Multi-Tabel Insert Lanjutan):**
+  - Rancang satu form HTML berisikan kolom: Nama, Email, Password, Telepon, dan Alamat.
+  - Pada method `store`, operasi Insert harus berurutan. Pertama, lakukan `User::create(...)` untuk menyimpan akun sistem beserta password yang di-hash. Kedua, simpan rincian identitas sisanya ke dalam tabel `customers` yang membawa variabel `$user->id`.
+- **View Edit & Update:** Pisahkan proses update menjadi 2 baris *query* update terpisah di dalam controller (update tabel user, kemudian update tabel customer).
+- **Delete:** Hapus berdasarkan model User. Identitasnya di tabel `customers` akan otomatis terhapus bersama.
 
-### 11. Buat View Update (Edit Data)
-- Pada method `edit($id)`, muat rincian dari satu produk beserta semua data Kategori.
-- Tampilkan form edit di `resources/views/products/edit.blade.php` dengan fitur *pre-filled* (input sudah terisi otomatis berdasarkan data lama).
-- Pada method `update`, lakukan proses update menggunakan fungsi bawaan Eloquent (seperti `$product->update()`), kemudian *redirect* kembali ke halaman *index*.
+### 10. Fitur 4: Manajemen Pesanan (Tabel `orders`, `order_items`, `payments`, `shipping_details`)
+- **Route & Controller:** Buat rute resource dan `OrderController`.
+- **View Read (Index):** Tampilkan rangkuman transaksi ringkas (Kode Pesanan, Nama Pelanggan, Tanggal, Total Pembayaran, Status Pesanan).
+- **View Create & Store (Insert ke 4 Tabel Sekaligus):**
+  - Form Pembuatan Pesanan harus menampilkan dua Dropdown utama: Pilihan Pelanggan dan Pilihan Produk (yang stoknya > 0). Lengkapi juga dengan kolom Kuantitas beli, Alamat Kirim, dan Metode Bayar (Dropown bank transfer/e-wallet).
+  - Saat di-submit (`store`), susun urutan simpan/insert sebagai berikut:
+    1. Buat record transaksi utama di tabel `orders` dengan nominal total (Harga Produk × Kuantitas).
+    2. Simpan catatan barang apa yang dibeli ke tabel `order_items`. Di tahap ini, lakukan perintah kurangi Stok (*decrement*) pada produk di database.
+    3. Catat metode dan bukti lunas ke tabel `payments`.
+    4. Masukkan data alamat ekspedisi pembeli ke tabel `shipping_details`.
+- **View Show (Detail Faktur):** Buat sebuah rincian halaman selayaknya Invoice resmi. Anda harus merelasikan dan memanggil data dari ke-4 tabel tersebut sekaligus dalam satu halaman (Detail Pengiriman, Informasi Pembeli, Bukti Bayar, serta Daftar Item Keranjang Belanja).
+- **View Edit & Update Status:** Pada bagian *Update*, pengguna hanya diizinkan mengubah dan memperbarui *Status Pesanan* (misalnya dari "Processing" diubah menjadi "Shipped" atau "Completed").
 
-### 12. Proses Delete (Hapus Data)
-- Pada method `destroy($id)`, muat objek produk, lalu hapus rekaman data menggunakan fungsi Eloquent `$product->delete()`.
-- Kembalikan pengguna (redirect) ke halaman index disertai pesan konfirmasi bahwa produk telah berhasil dihapus.
+---
+
+## Ketentuan Ekstra
+- Jangan lupa menyisipkan logika **Validasi** sederhana (`$request->validate()`) di tiap fungsi simpan/ubah Controller agar data yang masuk ke database terjamin kesesuaian tipenya.
+- Implementasikan UI dengan rapi agar proses transisi pindah halaman (*flash message alert* dll) berjalan secara responsif.
