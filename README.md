@@ -8,31 +8,41 @@ Dalam tugas ini, Anda diminta untuk membuat aplikasi berbasis web menggunakan fr
 ## Spesifikasi ERD (Entity Relationship Diagram)
 Aplikasi ini memiliki skema yang kompleks dengan **9 tabel** yang saling berelasi. Anda diwajibkan untuk membuat *Migration* dan *Model (Eloquent)* untuk kesembilan tabel di bawah ini:
 
-1. **`users`** (Tabel Autentikasi bawaan Laravel)
-   - Kolom: `id`, `name`, `email`, `password`, `timestamps`
-2. **`customers`** (Profil Pelanggan)
-   - Kolom: `id`, `user_id` (FK), `phone`, `address`, `timestamps`
-   - Relasi: *Belongs to* `users`
+1. **`users`** (Tabel Autentikasi Sistem bawaan Laravel)
+   - **Kolom:** `id`, `name`, `email`, `password`, `timestamps`
+   - **Relasi:** Memiliki satu Pelanggan (*Has One Customer*).
+
+2. **`customers`** (Profil Detail Pelanggan)
+   - **Kolom:** `id`, `user_id` (Foreign Key), `phone`, `address`, `timestamps`
+   - **Relasi:** Milik satu User (*Belongs to User*), Memiliki banyak Pesanan (*Has Many Orders*).
+
 3. **`categories`** (Kategori Produk)
-   - Kolom: `id`, `name`, `description`, `timestamps`
+   - **Kolom:** `id`, `name`, `description`, `timestamps`
+   - **Relasi:** Memiliki banyak Produk (*Has Many Products*).
+
 4. **`products`** (Data Produk Utama)
-   - Kolom: `id`, `category_id` (FK), `name`, `description`, `price`, `stock`, `timestamps`
-   - Relasi: *Belongs to* `categories`
+   - **Kolom:** `id`, `category_id` (Foreign Key), `name`, `description`, `price`, `stock`, `timestamps`
+   - **Relasi:** Milik satu Kategori (*Belongs to Category*), Memiliki banyak Gambar (*Has Many Product Images*).
+
 5. **`product_images`** (Galeri Gambar Produk)
-   - Kolom: `id`, `product_id` (FK), `image_url`, `timestamps`
-   - Relasi: *Belongs to* `products`
-6. **`orders`** (Data Transaksi Pesanan)
-   - Kolom: `id`, `customer_id` (FK), `order_date`, `total_amount`, `status`, `timestamps`
-   - Relasi: *Belongs to* `customers`
-7. **`order_items`** (Detail Item Produk yang Dipesan)
-   - Kolom: `id`, `order_id` (FK), `product_id` (FK), `quantity`, `price_at_purchase`, `timestamps`
-   - Relasi: *Belongs to* `orders`, *Belongs to* `products`
-8. **`payments`** (Data Pembayaran Transaksi)
-   - Kolom: `id`, `order_id` (FK), `payment_method`, `amount`, `payment_date`, `timestamps`
-   - Relasi: *Belongs to* `orders`
-9. **`shipping_details`** (Informasi Pengiriman Barang)
-   - Kolom: `id`, `order_id` (FK), `shipping_address`, `tracking_number`, `status`, `timestamps`
-   - Relasi: *Belongs to* `orders`
+   - **Kolom:** `id`, `product_id` (Foreign Key), `image_url`, `timestamps`
+   - **Relasi:** Milik satu Produk (*Belongs to Product*).
+
+6. **`orders`** (Data Transaksi Pesanan Utama)
+   - **Kolom:** `id`, `customer_id` (Foreign Key), `order_date`, `total_amount`, `status`, `timestamps`
+   - **Relasi:** Milik satu Pelanggan (*Belongs to Customer*), Memiliki banyak Item (*Has Many Order Items*), Memiliki satu Pembayaran (*Has One Payment*), Memiliki satu Pengiriman (*Has One Shipping Detail*).
+
+7. **`order_items`** (Detail Produk di Dalam Pesanan)
+   - **Kolom:** `id`, `order_id` (Foreign Key), `product_id` (Foreign Key), `quantity`, `price_at_purchase`, `timestamps`
+   - **Relasi:** Milik satu Pesanan (*Belongs to Order*), Milik satu Produk (*Belongs to Product*).
+
+8. **`payments`** (Riwayat Transaksi Pembayaran)
+   - **Kolom:** `id`, `order_id` (Foreign Key), `payment_method`, `amount`, `payment_date`, `timestamps`
+   - **Relasi:** Milik satu Pesanan (*Belongs to Order*).
+
+9. **`shipping_details`** (Informasi Resi Logistik Pengiriman)
+   - **Kolom:** `id`, `order_id` (Foreign Key), `shipping_address`, `tracking_number`, `status`, `timestamps`
+   - **Relasi:** Milik satu Pesanan (*Belongs to Order*).
 
 ---
 
